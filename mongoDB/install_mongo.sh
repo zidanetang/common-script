@@ -126,7 +126,7 @@ pgp=`echo $version | awk -F "." '{print$1"."$2}'`
 if [ $mode = replication ]; then
     repo
     install
-    for ((i=0; i < $count; i++))
+    for ((i=0; i<$count; i++))
     do
         replica $i
         port=`expr 27017 - $i`
