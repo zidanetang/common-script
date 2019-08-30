@@ -134,7 +134,7 @@ if [ $mode = replication ]; then
 	PIDFILE=/var/run/mongo$port.pid
 	DAEMON=/usr/bin/mongod
 	DAEMON_OPTS="--config /etc/mongod/mongo$port/mongod.conf"
-        start-stop-daemon --background --start --quieti --pidfile $PIDFILE \
+        start-stop-daemon --background --start --quiet --pidfile $PIDFILE \
                         --make-pidfile --chuid mongodb:mongodb \
                         --exec $DAEMON -- $DAEMON_OPTS
     done
