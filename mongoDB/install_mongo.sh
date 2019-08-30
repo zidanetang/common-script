@@ -118,7 +118,7 @@ repo() {
 }
 
 #main
-
+parse_args
 
 if [ $mode = replication ]; then
     repo
