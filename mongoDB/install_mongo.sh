@@ -9,39 +9,11 @@
 
 
 help() {
-    echo "-c    cluster members"
-    echo "-m    cluster mode: replication, sharding, single"
-    echo "-v    mongodb version"
-}
-
-parse_args() {
-    for arg in "$@"
-    do
-        case $arg in
-            -m|--mode)
-            mode=$2
-            shift # Remove arg
-            shift # Remove value
-            ;;
-            -v|--version)
-            version=$2
-	    pgp=`echo $version | awk -F . '{print$1"."$2}'`
-            shift
-            shift
-            ;;
-            -c|--count)
-            count=$2
-            shift
-            shift
-            ;;
-            *)
-            help
-            ;;
-        esac
-    done 
-    echo "mode: "$mode
-    echo "version: "$version
-    echo "count: "$count
+    echo "Usage: install_mongo.sh -flags"
+    echo "flags:" 
+    echo "-c, --count      cluster members"
+    echo "-m, --mode       cluster mode: replication, sharding, single"
+    echo "-v, --version    mongodb version"
 }
 
 install() {
@@ -121,7 +93,37 @@ repo() {
 }
 
 #main
-parse_args
+
+for arg in "$@"
+do
+    case $arg in
+        -m|--mode)
+        mode=$2
+        shift # Remove arg
+        shift # Remove value
+        ;;
+        -v|--version)
+        version=$2
+        shift
+        shift
+        ;;
+        -c|--count)
+        count=$2
+        shift
+        shift
+        ;;
+        -h|--help)
+        help
+        exit 0
+        ;;
+        #*)
+        #echo "invalid option"
+        #help
+        #exit 127
+        #;;
+    esac
+done
+pgp=`echo $version | awk -F "." '{print$1"."$2}'`
 
 if [ $mode = replication ]; then
     repo
