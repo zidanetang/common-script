@@ -25,6 +25,7 @@ parse_args() {
             ;;
             -v|--version)
             version=$2
+	    pgp=`echo $version | awk -F . '{print$1"."$2}'`
             shift
             shift
             ;;
@@ -118,7 +119,6 @@ repo() {
 
 #main
 
-pgp=`echo $version | awk -F . '{print$1"."$2}'`
 
 if [ $mode = replication ]; then
     repo
