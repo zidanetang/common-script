@@ -131,10 +131,11 @@ if [ $mode = replication ]; then
         replica $i
         port=`expr 27017 - $i`
         #su - mongodb -c "mongod -f /etc/mongod/mongo$port/mongod.conf &"
+	PIDFILE=/var/run/mongo$port.pid
 	DAEMON=/usr/bin/mongod
 	DAEMON_OPTS="--config /etc/mongod/mongo$port/mongod.conf"
-        start-stop-daemon --background --start --quiet \
-                        --chuid mongodb:mongodb \
+        start-stop-daemon --background --start --quieti --pidfile $PIDFILE \
+                        --make-pidfile --chuid mongodb:mongodb \
                         --exec $DAEMON -- $DAEMON_OPTS
     done
     if [ $count > 1 ]; then
