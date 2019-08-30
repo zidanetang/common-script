@@ -6,7 +6,6 @@
 #counts=
 #mode=
 
-pgp=`echo $version | awk -F . '{print$1"."$2}'`
 
 
 help() {
@@ -117,7 +116,9 @@ repo() {
     mkdir -p /etc/mongod
 }
 
+#main
 
+pgp=`echo $version | awk -F . '{print$1"."$2}'`
 
 if [ $mode = replication ]; then
     repo
