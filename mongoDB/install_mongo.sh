@@ -23,10 +23,10 @@ install() {
 replica() {
     id=$1
     port=`expr 27017 - $id`
-    mkdir -p /etc/mongod/mongo$prot
+    mkdir -p /etc/mongod/mongo$port
     mkdir -p /var/lib/mongodb$port
-    chown -R mongodb:mongodb /var/lib/mongodb$prot
-    cat > /etc/mongod/mongo$prot/mongod.conf << EOF
+    chown -R mongodb:mongodb /var/lib/mongodb$port
+    cat > /etc/mongod/mongo$port/mongod.conf << EOF
 # mongod.conf
 
 # for documentation of all options, see:
@@ -34,7 +34,7 @@ replica() {
 
 # Where and how to store data.
 storage:
-  dbPath: /var/lib/mongodb$prot
+  dbPath: /var/lib/mongodb$port
   journal:
     enabled: true
 
@@ -46,7 +46,7 @@ systemLog:
 
 # network interfaces
 net:
-  port: $prot
+  port: $port
   bindIp: 127.0.0.1
 
 
@@ -132,7 +132,7 @@ if [ $mode = replication ]; then
     do
         replica $i
         port=`expr 27017 - $i`
-        su - mongodb -c "mongod -f /etc/mongod/mongo$prot/mongod.conf &"
+        su - mongodb -c "mongod -f /etc/mongod/mongo$port/mongod.conf &"
     done
     if [ $count > 1 ]; then
         init_repl
