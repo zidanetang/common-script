@@ -39,6 +39,9 @@ parse_args() {
             ;;
         esac
     done 
+    echo "mode: "$mode
+    echo "version: "$version
+    echo "count: "$count
 }
 
 install() {
