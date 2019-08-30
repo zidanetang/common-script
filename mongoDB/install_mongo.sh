@@ -132,7 +132,10 @@ if [ $mode = replication ]; then
     do
         replica $i
         port=`expr 27017 - $i`
-        su - mongodb -c "mongod -f /etc/mongod/mongo$port/mongod.conf &"
+        #su - mongodb -c "mongod -f /etc/mongod/mongo$port/mongod.conf &"
+        start-stop-daemon --background --start --quiet \
+                        --chuid mongodb:mongodb \
+                        --exec /usr/bin/mongod -f /etc/mongod/mongo$port/mongod.conf
     done
     if [ $count > 1 ]; then
         init_repl
