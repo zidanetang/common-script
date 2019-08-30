@@ -1,10 +1,8 @@
 #!/bin/bash
 
 #Author: Melo.tang
-
-#version=
-#counts=
-#mode=
+#start mongodb
+#https://github.com/mongodb/mongo/blob/master/debian/init.d
 
 
 
@@ -135,7 +133,7 @@ if [ $mode = replication ]; then
         #su - mongodb -c "mongod -f /etc/mongod/mongo$port/mongod.conf &"
         start-stop-daemon --background --start --quiet \
                         --chuid mongodb:mongodb \
-                        --exec /usr/bin/mongod -f /etc/mongod/mongo$port/mongod.conf
+                        --exec /usr/bin/mongod --config /etc/mongod/mongo$port/mongod.conf
     done
     if [ $count > 1 ]; then
         init_repl
