@@ -135,7 +135,7 @@ if [ $mode = replication ]; then
 	DAEMON_OPTS="--config /etc/mongod/mongo$port/mongod.conf"
         start-stop-daemon --background --start --quiet \
                         --chuid mongodb:mongodb \
-                        --exec $DAEMON $DAEMON_OPTS
+                        --exec $DAEMON -- $DAEMON_OPTS
     done
     if [ $count > 1 ]; then
         init_repl
