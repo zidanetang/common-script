@@ -137,6 +137,7 @@ if [ $mode = replication ]; then
         start-stop-daemon --background --start --quiet --pidfile $PIDFILE \
                         --make-pidfile --chuid mongodb:mongodb \
                         --exec $DAEMON -- $DAEMON_OPTS
+	sleep 2
     done
     if [ $count > 1 ]; then
         init_repl
