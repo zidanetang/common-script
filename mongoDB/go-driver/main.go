@@ -101,7 +101,11 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	result := make([]string, nums)
 	for num := 0; num < nums ; num++  {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		res, err := collection.InsertOne(ctx, bson.M{"UUID": uuid.New(),"value": rand.Float32(),"timestamp": time.Now().String()})
+                uid ,err := uuid.New()
+		if err != nil {
+			return nil, err
+		}
+		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid,"value": rand.Float32(),"timestamp": time.Now().String()})
 		if err != nil {
 			return nil, err
 		}
