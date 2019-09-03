@@ -1,24 +1,25 @@
-package main
+package handler
 
 import (
-	cli "gopkg.in/urfave/cli.v2"
-	"github.com/olekukonko/tablewriter"
+	"context"
+	"fmt"
 	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
-	"strconv"
-
+	cli "gopkg.in/urfave/cli.v2"
 	"math/rand"
 	"os"
-	"context"
+	"reflect"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
-	"fmt"
 )
-
-
 
 func PrintError(err error) {
 	color.Set(color.FgRed)
@@ -28,10 +29,12 @@ func PrintError(err error) {
 
 func SetFlags() []cli.Flag {
 	return []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:"servers",
+		&cli.StringFlag{
+			Name:    "servers",
 			Aliases: []string{"s"},
-			Usage: "Specify MongoDB server Cluster list, example: ['127.0.0.1:27001', '127.0.0.1:27002','127.0.0.1:27003']",
+			Usage: "Specify MongoDB server Cluster, example, e.g.\n" +
+				"\t\t\t -s 127.0.0.1:27017\n" +
+				"\t\t\t -s \"127.0.0.1:27017 127.0.0.1:27016 127.0.0.1:27015\"",
 		},
 		&cli.StringFlag{
 			Name:    "counts",
@@ -72,11 +75,22 @@ func PrintWithTable(title string, rows [][]string, header []string) {
 	table.Render() // Send output
 }
 
+func Duplicate(a interface{}) (ret []interface{}) {
+	va := reflect.ValueOf(a)
+	for i := 0; i < va.Len(); i++ {
+		if i > 0 && reflect.DeepEqual(va.Index(i-1).Interface(), va.Index(i).Interface()) {
+			continue
+		}
+		ret = append(ret, va.Index(i).Interface())
+	}
+	return ret
+}
+
 func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	for _, s := range servers{
-		c, err := mongo.Connect(ctx,options.Client().ApplyURI("mongodb://"+ s))
+	for _, s := range servers {
+		c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
 		if err != nil {
 			return nil, nil
 		}
@@ -92,36 +106,47 @@ func Clinet(servers []string) (*mongo.Client, error) {
 func insertDocuments(c *mongo.Client, count string, db string, table string) ([]string, error) {
 	nums, err := strconv.Atoi(count)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
-	if nums <= 0{
+	if nums <= 0 {
 		return nil, fmt.Errorf("agrs count is not right!")
 	}
 	collection := c.Database(db).Collection(table)
 	result := make([]string, nums)
-	for num := 0; num < nums ; num++  {
+	for num := 0; num < nums; num++ {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-                uid ,err := uuid.New()
+		uid, err := uuid.New()
 		if err != nil {
 			return nil, err
 		}
-		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid,"value": rand.Float32(),"timestamp": time.Now().String()})
+		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": rand.Float32(), "timestamp": time.Now().String()})
 		if err != nil {
 			return nil, err
 		}
 		//id := res.InsertedID
-		record := fmt.Sprint( res.InsertedID)
+		record := fmt.Sprint(res.InsertedID)
 		result = append(result, record)
 	}
 	return result, nil
 }
 
-func run(c *cli.Context) error {
-	servers := c.StringSlice("servers")
+func Run(c *cli.Context) error {
+	var serviceTodoList []string
+	servers := c.String("servers")
+	if len(servers) != 0 {
+		reg := regexp.MustCompile(`\s+`)
+		serversList := reg.Split(strings.TrimSpace(servers), -1)
+		sort.Strings(serversList)
+		distinctServersList := Duplicate(serversList)
+		for _, service := range distinctServersList {
+			serviceTodoList = append(serviceTodoList, service.(string))
+		}
+	}
+
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
-	client, err := Clinet(servers)
+	client, err := Clinet(serviceTodoList)
 	if err != nil {
 		return err
 	}
@@ -130,55 +155,9 @@ func run(c *cli.Context) error {
 		return err
 	}
 	title := "Result:\n"
-	 cont := [][]string{result}
+	cont := [][]string{result}
 	header := []string{"InsertedID"}
 
 	PrintWithTable(title, cont, header)
 	return nil
-}
-
-// VERSION of are
-const VERSION = "v0.1.0"
-
-const helpOutput = `NAME:
-   {{.Name}} - {{.Usage}}
-USAGE:
-   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
-   {{if len .Authors}}
-AUTHOR:
-   {{range .Authors}}{{ . }}{{end}}
-   {{end}}{{if .Commands}}
-COMMANDS:
-{{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
-GLOBAL OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{if .Copyright }}
-COPYRIGHT:
-   {{.Copyright}}
-   {{end}}{{if .Version}}
-VERSION:
-   {{.Version}} - {{.Compiled}}
-   {{end}}
-`
-
-func main() {
-
-	// red := color.New(color.FgRed).SprintFunc()
-
-	cli.AppHelpTemplate = helpOutput
-
-	app := &cli.App{
-		Name:     "are",
-		Usage:    "Auto Remediate AWS EC2 Events",
-		Flags:    SetFlags(),
-		Compiled: time.Now(),
-		Version:  VERSION,
-		Action: func(c *cli.Context) error {
-			return run(c)
-		},
-	}
-	err := app.Run(os.Args)
-	if err != nil {
-		PrintError(err)
-	}
 }
