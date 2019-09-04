@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 	cli "gopkg.in/urfave/cli.v2"
 	"math/rand"
@@ -88,6 +89,10 @@ func Clinet(servers string) (*mongo.Client, error) {
 	//func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
+	err := client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		return nil, nil
+	}
 	/*
 		for _, s := range servers {
 			c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
