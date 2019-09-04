@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+
 	//"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 	cli "gopkg.in/urfave/cli.v2"
@@ -103,14 +105,15 @@ func Clinet(servers string) (*mongo.Client, error) {
 			client = c
 		}
 	*/
-	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	uri := "mongodb://" + servers
 	fmt.Println(uri)
 	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
 		return nil, err
 	}
-	cerr := c.Connect(ctx)
-	//cerr := c.Ping(ctx, readpref.Primary())
+
+	cerr := c.Ping(ctx, readpref.Primary())
 	if cerr != nil {
 		return nil, cerr
 	}
