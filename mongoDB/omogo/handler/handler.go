@@ -119,7 +119,7 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	collection := c.Database(db).Collection(table)
 	result := make([]string, nums)
 	for num := 0; num < nums; num++ {
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 		uid, err := uuid.New()
 		if err != nil {
 			return nil, err
