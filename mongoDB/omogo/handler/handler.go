@@ -87,10 +87,15 @@ func Duplicate(a interface{}) (ret []interface{}) {
 	}
 	return ret
 }
-func Clinet(servers string) (*mongo.Client, error) {
+func Run(c *cli.Context) error {
 	//func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
+
+	servers := c.String("servers")
+	count := c.String("counts")
+	db := c.String("DB")
+	coll := c.String("Collection")
 
 	/*
 		for _, s := range servers {
@@ -105,21 +110,32 @@ func Clinet(servers string) (*mongo.Client, error) {
 			client = c
 		}
 	*/
-	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
-	uri := "mongodb://" + servers
+	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	//uri := "mongodb://" + servers
 	fmt.Println(uri)
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
+	con, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	cerr := c.Ping(ctx, readpref.Primary())
+	cerr := con.Ping(ctx, readpref.Primary())
 	if cerr != nil {
-		return nil, cerr
+		return cerr
 	}
-	client = c
+	client = con
 
-	return client, nil
+	result, err := insertDocuments(client, count, db, coll)
+	if err != nil || len(result) == 0 {
+		return err
+	}
+	fmt.Println("End insert")
+	title := "Result:\n"
+	cont := [][]string{result}
+	header := []string{"InsertedID"}
+
+	PrintWithTable(title, cont, header)
+
+	return nil
 }
 
 func insertDocuments(c *mongo.Client, count string, db string, table string) ([]string, error) {
@@ -151,10 +167,11 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	return result, nil
 }
 
+/*
 func Run(c *cli.Context) error {
 	//var serviceTodoList string
 	servers := c.String("servers")
-	/*
+
 		if len(servers) != 0 {
 			reg := regexp.MustCompile(`\s+`)
 			serversList := reg.Split(strings.TrimSpace(servers), -1)
@@ -165,7 +182,7 @@ func Run(c *cli.Context) error {
 				serviceTodoList
 			}
 		}
-	*/
+
 
 	count := c.String("counts")
 	db := c.String("DB")
@@ -190,3 +207,4 @@ func Run(c *cli.Context) error {
 	PrintWithTable(title, cont, header)
 	return nil
 }
+*/
