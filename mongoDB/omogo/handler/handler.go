@@ -98,7 +98,9 @@ func Clinet(servers string) (*mongo.Client, error) {
 			client = c
 		}
 	*/
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+servers))
+	server := "mongodb://" + servers
+	fmt.Println(server)
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+server))
 	if err != nil {
 		return nil, nil
 	}
