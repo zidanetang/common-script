@@ -84,7 +84,7 @@ func Duplicate(a interface{}) (ret []interface{}) {
 func Clinet(servers string) (*mongo.Client, error) {
 	//func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 	/*
 		for _, s := range servers {
 			c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
