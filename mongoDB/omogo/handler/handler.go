@@ -89,10 +89,7 @@ func Clinet(servers string) (*mongo.Client, error) {
 	//func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
-	err := client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		return nil, nil
-	}
+
 	/*
 		for _, s := range servers {
 			c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
@@ -112,7 +109,12 @@ func Clinet(servers string) (*mongo.Client, error) {
 	if err != nil {
 		return nil, nil
 	}
+	cerr := c.Ping(ctx, readpref.Primary())
+	if cerr != nil {
+		return nil, cerr
+	}
 	client = c
+
 	return client, nil
 }
 
