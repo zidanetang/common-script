@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/zidanetang/common-script/mongoDB/omogo/handler"
+	handler "./handler"
 	"gopkg.in/urfave/cli.v2"
 	"os"
 	"time"
