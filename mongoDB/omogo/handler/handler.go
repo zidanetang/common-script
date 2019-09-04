@@ -13,7 +13,10 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	//"regexp"
+	//"sort"
 	"strconv"
+	//"strings"
 	"time"
 )
 
@@ -29,8 +32,8 @@ func SetFlags() []cli.Flag {
 			Name:    "servers",
 			Aliases: []string{"s"},
 			Usage: "Specify MongoDB server Cluster, example, e.g.\n" +
-				"\t\t\t -s 127.0.0.1:27017\n",
-			//"\t\t\t -s \"127.0.0.1:27017 127.0.0.1:27016 127.0.0.1:27015\"",
+				"\t\t\t -s 127.0.0.1:27017\n" +
+				"\t\t\t -s \"127.0.0.1:27017,127.0.0.1:27016,127.0.0.1:27015\"",
 		},
 		&cli.StringFlag{
 			Name:    "counts",
@@ -98,9 +101,9 @@ func Clinet(servers string) (*mongo.Client, error) {
 			client = c
 		}
 	*/
-	server := "mongodb://" + servers
-	fmt.Println(server)
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+server))
+	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	fmt.Println(uri)
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
 		return nil, nil
 	}
@@ -117,6 +120,7 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 		return nil, fmt.Errorf("agrs count is not right!")
 	}
 	collection := c.Database(db).Collection(table)
+
 	result := make([]string, nums)
 	for num := 0; num < nums; num++ {
 		ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
@@ -124,12 +128,7 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(uid)
-		value := rand.Float32()
-		fmt.Println(value)
-		timestamp := time.Now().String()
-		fmt.Println(timestamp)
-		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": value, "timestamp": timestamp})
+		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": rand.Float32(), "timestamp": time.Now().String()})
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +141,7 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 }
 
 func Run(c *cli.Context) error {
-	//var serviceTodoList []string
+	//var serviceTodoList string
 	servers := c.String("servers")
 	/*
 		if len(servers) != 0 {
@@ -151,10 +150,12 @@ func Run(c *cli.Context) error {
 			sort.Strings(serversList)
 			distinctServersList := Duplicate(serversList)
 			for _, service := range distinctServersList {
-				serviceTodoList = append(serviceTodoList, service.(string))
+				//serviceTodoList = append(serviceTodoList, service.(string))
+				serviceTodoList
 			}
 		}
 	*/
+
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
