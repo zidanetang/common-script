@@ -170,15 +170,19 @@ func Run(c *cli.Context) error {
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
-	client, err := Clinet(servers)
+	var client *mongo.Client
+	var err error
+	client, err = Clinet(servers)
 	//client, err := Clinet(serviceTodoList)
 	if err != nil {
 		return err
 	}
+	fmt.Println("Start insert")
 	result, err := insertDocuments(client, count, db, coll)
 	if err != nil || len(result) == 0 {
 		return err
 	}
+	fmt.Println("End insert")
 	title := "Result:\n"
 	cont := [][]string{result}
 	header := []string{"InsertedID"}
