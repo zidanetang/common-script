@@ -124,10 +124,12 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println(uid)
 		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": rand.Float32(), "timestamp": time.Now().String()})
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println(res)
 		//id := res.InsertedID
 		record := fmt.Sprint(res.InsertedID)
 		result = append(result, record)
