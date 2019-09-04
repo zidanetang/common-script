@@ -33,8 +33,8 @@ func SetFlags() []cli.Flag {
 			Name:    "servers",
 			Aliases: []string{"s"},
 			Usage: "Specify MongoDB server Cluster, example, e.g.\n" +
-				"\t\t\t -s 127.0.0.1:27017\n" +
-				"\t\t\t -s \"127.0.0.1:27017 127.0.0.1:27016 127.0.0.1:27015\"",
+				"\t\t\t -s 127.0.0.1:27017\n",
+			//"\t\t\t -s \"127.0.0.1:27017 127.0.0.1:27016 127.0.0.1:27015\"",
 		},
 		&cli.StringFlag{
 			Name:    "counts",
@@ -85,21 +85,28 @@ func Duplicate(a interface{}) (ret []interface{}) {
 	}
 	return ret
 }
-
-func Clinet(servers []string) (*mongo.Client, error) {
+func Clinet(servers string) (*mongo.Client, error) {
+	//func Clinet(servers []string) (*mongo.Client, error) {
 	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	for _, s := range servers {
-		c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
-		if err != nil {
-			return nil, nil
+	/*
+		for _, s := range servers {
+			c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
+			if err != nil {
+				return nil, nil
+			}
+			err = client.Ping(ctx, readpref.Primary())
+			if err != nil {
+				return nil, nil
+			}
+			client = c
 		}
-		err = client.Ping(ctx, readpref.Primary())
-		if err != nil {
-			return nil, nil
-		}
-		client = c
+	*/
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+servers))
+	if err != nil {
+		return nil, nil
 	}
+	client = c
 	return client, nil
 }
 
@@ -131,22 +138,24 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 }
 
 func Run(c *cli.Context) error {
-	var serviceTodoList []string
+	//var serviceTodoList []string
 	servers := c.String("servers")
-	if len(servers) != 0 {
-		reg := regexp.MustCompile(`\s+`)
-		serversList := reg.Split(strings.TrimSpace(servers), -1)
-		sort.Strings(serversList)
-		distinctServersList := Duplicate(serversList)
-		for _, service := range distinctServersList {
-			serviceTodoList = append(serviceTodoList, service.(string))
+	/*
+		if len(servers) != 0 {
+			reg := regexp.MustCompile(`\s+`)
+			serversList := reg.Split(strings.TrimSpace(servers), -1)
+			sort.Strings(serversList)
+			distinctServersList := Duplicate(serversList)
+			for _, service := range distinctServersList {
+				serviceTodoList = append(serviceTodoList, service.(string))
+			}
 		}
-	}
-
+	*/
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
-	client, err := Clinet(serviceTodoList)
+	client, err := Clinet(servers)
+	//client, err := Clinet(serviceTodoList)
 	if err != nil {
 		return err
 	}
