@@ -105,15 +105,15 @@ func Clinet(servers string) (*mongo.Client, error) {
 			client = c
 		}
 	*/
-	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
-	uri := "mongodb://" + servers
+	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	//uri := "mongodb://" + servers
 	fmt.Println(uri)
 	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	c, err := mongo.NewClient(options.Client().ApplyURI("mongodb://" + uri))
 	if err != nil {
 		return nil, err
 	}
-
+	err = c.Connect(ctx)
 	cerr := c.Ping(ctx, readpref.Primary())
 	if cerr != nil {
 		return nil, cerr
