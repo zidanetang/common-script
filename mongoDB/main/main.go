@@ -62,7 +62,7 @@ func Run(c *cli.Context) error {
 		return err
 	}
 	collection := client.Database(db).Collection(coll)
-	for num := 0; num < 100; num++ {
+	for num := 0; num < nums; num++ {
 		ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 		uid, err := uuid.New()
 		if err != nil {
