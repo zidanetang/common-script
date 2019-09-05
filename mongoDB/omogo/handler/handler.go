@@ -1,20 +1,23 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	//"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 	"gopkg.in/urfave/cli.v2"
-
-	"context"
-	"fmt"
 	"math/rand"
 	"os"
 	"reflect"
+	//"regexp"
+	//"sort"
 	"strconv"
+	//"strings"
 	"time"
 )
 
@@ -31,7 +34,7 @@ func SetFlags() []cli.Flag {
 			Aliases: []string{"s"},
 			Usage: "Specify MongoDB server Cluster, example, e.g.\n" +
 				"\t\t\t -s 127.0.0.1:27017\n" +
-				"\t\t\t -s \"127.0.0.1:27017,127.0.0.1:27016,127.0.0.1:27015\"",
+				"\t\t\t -s 127.0.0.1:27017,127.0.0.1:27016,127.0.0.1:27015",
 		},
 		&cli.StringFlag{
 			Name:    "counts",
@@ -82,40 +85,35 @@ func Duplicate(a interface{}) (ret []interface{}) {
 	}
 	return ret
 }
-
-/*
 func Clinet(servers string) (*mongo.Client, error) {
 	//func Clinet(servers []string) (*mongo.Client, error) {
-	//var client *mongo.Client
+	var client *mongo.Client
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 
-
-		//for _, s := range servers {
-			//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
-			//if err != nil {
-				//return nil, nil
-			//}
-			//err = client.Ping(ctx, readpref.Primary())
-			//if err != nil {
-				//return nil, nil
-			//}
-			//client = c
-		//}
-
+	/*
+		for _, s := range servers {
+			c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+s))
+			if err != nil {
+				return nil, nil
+			}
+			err = client.Ping(ctx, readpref.Primary())
+			if err != nil {
+				return nil, nil
+			}
+			client = c
+		}
+	*/
 	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
-	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://" + uri))
+	//uri := "mongodb://" + servers
+	fmt.Println(uri)
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
 		return nil, err
 	}
-	err = client.Connect(ctx)
-	//client = c
-
+	client = c
 	return client, nil
 }
-*/
 
-/*
 func insertDocuments(c *mongo.Client, count string, db string, table string) ([]string, error) {
 	nums, err := strconv.Atoi(count)
 	if err != nil {
@@ -145,8 +143,6 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	return result, nil
 }
 
-*/
-
 func Run(c *cli.Context) error {
 	//var serviceTodoList string
 	servers := c.String("servers")
@@ -166,65 +162,23 @@ func Run(c *cli.Context) error {
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
-
-	//var client *mongo.Client
-	//var err error
-	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
-	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
-	uri := "mongodb://" + servers
-	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
+	var client *mongo.Client
+	var err error
+	client, err = Clinet(servers)
+	//client, err := Clinet(serviceTodoList)
 	if err != nil {
 		return err
 	}
-
-	/*
-		client, err = Clinet(servers)
-		//client, err := Clinet(serviceTodoList)
-		if err != nil {
-			return err
-		}
-
-	*/
 	fmt.Println("Start insert")
-	/*
-		result, err := insertDocuments(client, count, db, coll)
-		if err != nil || len(result) == 0 {
-			return err
-		}
-
-	*/
-	nums, err := strconv.Atoi(count)
-	if err != nil {
+	result, err := insertDocuments(client, count, db, coll)
+	if err != nil || len(result) == 0 {
 		return err
 	}
-	if nums <= 0 {
-		return fmt.Errorf("agrs count is not right!")
-	}
-	collection := client.Database(db).Collection(coll)
-
-	//result := make([]string, nums)
-	for num := 0; num < nums; num++ {
-		//ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
-		uid, err := uuid.New()
-		if err != nil {
-			return err
-		}
-		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": rand.Float32(), "timestamp": time.Now().String()})
-		if err != nil {
-			return err
-		}
-		fmt.Println(res)
-		//id := res.InsertedID
-		//record := fmt.Sprint(res.InsertedID)
-		//result = append(result, record)
-	}
-
 	fmt.Println("End insert")
-	//title := "Result:\n"
-	//cont := [][]string{result}
-	//header := []string{"InsertedID"}
+	title := "Result:\n"
+	cont := [][]string{result}
+	header := []string{"InsertedID"}
 
-	//PrintWithTable(title, cont, header)
+	PrintWithTable(title, cont, header)
 	return nil
 }
