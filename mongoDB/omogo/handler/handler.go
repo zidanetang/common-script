@@ -170,7 +170,8 @@ func Run(c *cli.Context) error {
 	var client *mongo.Client
 	var err error
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
-	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
+	uri := "mongodb://" + servers
 	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	client, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
