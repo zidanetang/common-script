@@ -1,27 +1,26 @@
 package handler
 
 import (
-	"context"
-	"fmt"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-
-	//"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
-	cli "gopkg.in/urfave/cli.v2"
+
+	"context"
+	"fmt"
+	"gopkg.in/urfave/cli.v2"
 	"math/rand"
 	"os"
 	"reflect"
-	//"regexp"
-	//"sort"
 	"strconv"
-	//"strings"
 	"time"
 )
+
+type config struct {
+	client *mongo.Client
+}
 
 func PrintError(err error) {
 	color.Set(color.FgRed)
@@ -87,9 +86,9 @@ func Duplicate(a interface{}) (ret []interface{}) {
 	}
 	return ret
 }
-func Clinet(servers string) (*mongo.Client, error) {
+func Clinet(servers string) (config, error) {
 	//func Clinet(servers []string) (*mongo.Client, error) {
-	//var client *mongo.Client
+	var sess config
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 
 	/*
@@ -106,24 +105,24 @@ func Clinet(servers string) (*mongo.Client, error) {
 		}
 	*/
 	uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
-	//uri := "mongodb://" + servers
-	fmt.Println(uri)
 	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://" + uri))
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
-		return nil, err
+		return config{nil}, err
 	}
-	err = client.Connect(ctx)
-	cerr := client.Ping(ctx, readpref.Primary())
-	if cerr != nil {
-		return nil, cerr
-	}
-	//client = c
+	/*
+		cerr := client.Ping(ctx, readpref.Primary())
+		if cerr != nil {
+			return nil, cerr
+		}
 
-	return client, nil
+	*/
+	sess.client = c
+
+	return sess, nil
 }
 
-func insertDocuments(c *mongo.Client, count string, db string, table string) ([]string, error) {
+func (c config) insertDocuments(count string, db string, table string) ([]string, error) {
 	nums, err := strconv.Atoi(count)
 	if err != nil {
 		return nil, err
@@ -131,7 +130,8 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	if nums <= 0 {
 		return nil, fmt.Errorf("agrs count is not right!")
 	}
-	collection := c.Database(db).Collection(table)
+	client := c.client
+	collection := client.Database(db).Collection(table)
 
 	result := make([]string, nums)
 	for num := 0; num < nums; num++ {
@@ -171,15 +171,15 @@ func Run(c *cli.Context) error {
 	count := c.String("counts")
 	db := c.String("DB")
 	coll := c.String("Collection")
-	var client *mongo.Client
+	var clisess config
 	var err error
-	client, err = Clinet(servers)
+	clisess, err = Clinet(servers)
 	//client, err := Clinet(serviceTodoList)
 	if err != nil {
 		return err
 	}
 	fmt.Println("Start insert")
-	result, err := insertDocuments(client, count, db, coll)
+	result, err := clisess.insertDocuments(count, db, coll)
 	if err != nil || len(result) == 0 {
 		return err
 	}
