@@ -115,6 +115,7 @@ func Clinet(servers string) (*mongo.Client, error) {
 }
 */
 
+/*
 func insertDocuments(c *mongo.Client, count string, db string, table string) ([]string, error) {
 	nums, err := strconv.Atoi(count)
 	if err != nil {
@@ -143,6 +144,8 @@ func insertDocuments(c *mongo.Client, count string, db string, table string) ([]
 	}
 	return result, nil
 }
+
+*/
 
 func Run(c *cli.Context) error {
 	//var serviceTodoList string
@@ -183,10 +186,39 @@ func Run(c *cli.Context) error {
 
 	*/
 	fmt.Println("Start insert")
-	result, err := insertDocuments(client, count, db, coll)
-	if err != nil || len(result) == 0 {
+	/*
+		result, err := insertDocuments(client, count, db, coll)
+		if err != nil || len(result) == 0 {
+			return err
+		}
+
+	*/
+	nums, err := strconv.Atoi(count)
+	if err != nil {
 		return err
 	}
+	if nums <= 0 {
+		return fmt.Errorf("agrs count is not right!")
+	}
+	collection := client.Database(db).Collection(coll)
+
+	result := make([]string, nums)
+	for num := 0; num < nums; num++ {
+		ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
+		uid, err := uuid.New()
+		if err != nil {
+			return err
+		}
+		res, err := collection.InsertOne(ctx, bson.M{"UUID": uid, "value": rand.Float32(), "timestamp": time.Now().String()})
+		if err != nil {
+			return err
+		}
+		fmt.Println(res)
+		//id := res.InsertedID
+		record := fmt.Sprint(res.InsertedID)
+		result = append(result, record)
+	}
+
 	fmt.Println("End insert")
 	title := "Result:\n"
 	cont := [][]string{result}
