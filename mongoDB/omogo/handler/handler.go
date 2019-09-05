@@ -167,13 +167,13 @@ func Run(c *cli.Context) error {
 	db := c.String("DB")
 	coll := c.String("Collection")
 
-	var client *mongo.Client
-	var err error
+	//var client *mongo.Client
+	//var err error
 	ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 	//uri := "mongodb://" + servers + "/admin?replicaSet=rs0"
 	uri := "mongodb://" + servers
 	//c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
-	client, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+uri))
 	if err != nil {
 		return err
 	}
@@ -203,9 +203,9 @@ func Run(c *cli.Context) error {
 	}
 	collection := client.Database(db).Collection(coll)
 
-	result := make([]string, nums)
+	//result := make([]string, nums)
 	for num := 0; num < nums; num++ {
-		ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
+		//ctx, _ := context.WithTimeout(context.Background(), 300*time.Second)
 		uid, err := uuid.New()
 		if err != nil {
 			return err
@@ -216,15 +216,15 @@ func Run(c *cli.Context) error {
 		}
 		fmt.Println(res)
 		//id := res.InsertedID
-		record := fmt.Sprint(res.InsertedID)
-		result = append(result, record)
+		//record := fmt.Sprint(res.InsertedID)
+		//result = append(result, record)
 	}
 
 	fmt.Println("End insert")
-	title := "Result:\n"
-	cont := [][]string{result}
-	header := []string{"InsertedID"}
+	//title := "Result:\n"
+	//cont := [][]string{result}
+	//header := []string{"InsertedID"}
 
-	PrintWithTable(title, cont, header)
+	//PrintWithTable(title, cont, header)
 	return nil
 }
