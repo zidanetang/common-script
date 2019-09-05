@@ -109,11 +109,11 @@ func main() {
 	app := &cli.App{
 		Name:     "omogo",
 		Usage:    "Insert doucyments into MongoDB",
-		Flags:    handler.SetFlags(),
+		Flags:    SetFlags(),
 		Compiled: time.Now(),
 		Version:  VERSION,
 		Action: func(c *cli.Context) error {
-			return handler.Run(c)
+			return Run(c)
 		},
 	}
 	err := app.Run(os.Args)
