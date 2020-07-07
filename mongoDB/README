@@ -1,2 +1,4 @@
+shell脚本在单机上安装一个mongo replica set
+go的二进制是可以插入数据，可以用于测试性能
 1. install_mongo.sh used to setup mongodb cluster on single host
     execute command： ./install_mongo.sh -c 3 -v 4.2.0 -m replication
